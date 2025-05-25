@@ -11,7 +11,9 @@ class Employee:
         self.department_id = department_id
 
     def __repr__(self):
-        return f"<Employee {self.id}: {self.name}, {self.job_title}, Dept: {self.department_id}>"
+        return f"<Employee {self.id}: {self.name}, {self.job_title}, Department ID: {self.department_id}>"
+
+    # ==== Property Setters ====
 
     @property
     def name(self):
@@ -19,7 +21,7 @@ class Employee:
 
     @name.setter
     def name(self, value):
-        if isinstance(value, str) and len(value.strip()):
+        if isinstance(value, str) and len(value.strip()) > 0:
             self._name = value.strip()
         else:
             raise ValueError("Name must be a non-empty string")
@@ -30,7 +32,7 @@ class Employee:
 
     @job_title.setter
     def job_title(self, value):
-        if isinstance(value, str) and len(value.strip()):
+        if isinstance(value, str) and len(value.strip()) > 0:
             self._job_title = value.strip()
         else:
             raise ValueError("Job title must be a non-empty string")
@@ -44,7 +46,9 @@ class Employee:
         if isinstance(value, int) and Department.find_by_id(value):
             self._department_id = value
         else:
-            raise ValueError("department_id must reference a valid Department")
+            raise ValueError("department_id must reference a valid department")
+
+    # ==== Database Table Methods ====
 
     @classmethod
     def create_table(cls):
@@ -73,12 +77,6 @@ class Employee:
         self.id = CURSOR.lastrowid
         Employee.all[self.id] = self
 
-    @classmethod
-    def create(cls, name, job_title, department_id):
-        emp = cls(name, job_title, department_id)
-        emp.save()
-        return emp
-
     def update(self):
         CURSOR.execute(
             "UPDATE employees SET name = ?, job_title = ?, department_id = ? WHERE id = ?",
@@ -92,6 +90,12 @@ class Employee:
         if self.id in Employee.all:
             del Employee.all[self.id]
         self.id = None
+
+    @classmethod
+    def create(cls, name, job_title, department_id):
+        employee = cls(name, job_title, department_id)
+        employee.save()
+        return employee
 
     @classmethod
     def instance_from_db(cls, row):

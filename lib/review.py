@@ -39,9 +39,9 @@ class Review:
                 "INSERT INTO reviews (year, summary, employee_id) VALUES (?, ?, ?)",
                 (self.year, self.summary, self.employee_id)
             )
+            CONN.commit()
             self.id = CURSOR.lastrowid
             Review.all[self.id] = self
-            CONN.commit()
 
     @classmethod
     def create(cls, year, summary, employee_id):
@@ -51,15 +51,15 @@ class Review:
 
     @classmethod
     def instance_from_db(cls, row):
-        review_id = row[0]
-        if review_id in cls.all:
-            review = cls.all[review_id]
-            review.year = row[1]
-            review.summary = row[2]
-            review.employee_id = row[3]
+        id, year, summary, employee_id = row
+        if id in cls.all:
+            review = cls.all[id]
+            review.year = year
+            review.summary = summary
+            review.employee_id = employee_id
         else:
-            review = cls(row[1], row[2], row[3], review_id)
-            cls.all[review_id] = review
+            review = cls(year, summary, employee_id, id)
+            cls.all[id] = review
         return review
 
     @classmethod
@@ -106,7 +106,7 @@ class Review:
 
     @summary.setter
     def summary(self, value):
-        if isinstance(value, str) and len(value.strip()) > 0:
+        if isinstance(value, str) and len(value.strip()):
             self._summary = value.strip()
         else:
             raise ValueError("Summary must be a non-empty string")
@@ -118,10 +118,7 @@ class Review:
     @employee_id.setter
     def employee_id(self, value):
         from lib.employee import Employee
-        if isinstance(value, int):
-            if Employee.find_by_id(value):
-                self._employee_id = value
-            else:
-                raise ValueError("employee_id must refer to a valid Employee")
+        if isinstance(value, int) and Employee.find_by_id(value):
+            self._employee_id = value
         else:
-            raise TypeError("employee_id must be an integer")
+            raise ValueError("employee_id must reference a valid Employee")
