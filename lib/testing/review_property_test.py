@@ -1,8 +1,7 @@
-from employee import Employee
-from department import Department
-from review import Review
+from lib.employee import Employee
+from lib.department import Department
+from lib.review import Review
 import pytest
-
 
 class TestReviewProperties:
     '''Class Review in review.py'''

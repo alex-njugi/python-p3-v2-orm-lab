@@ -1,4 +1,5 @@
-from employee import Employee, CONN, CURSOR
+from lib.employee import Employee
+from lib import CONN, CURSOR
 from department import Department
 from review import Review
 import pytest
