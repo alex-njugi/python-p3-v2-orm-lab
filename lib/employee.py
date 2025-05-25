@@ -126,3 +126,9 @@ class Review:
     @property
     def employee_id(self):
         return self.employee.id
+
+    def reviews(self):
+        from lib.review import Review
+        CURSOR.execute("SELECT * FROM reviews WHERE employee_id = ?;", (self.id,))
+        rows = CURSOR.fetchall()
+        return [Review.instance_from_db(row) for row in rows]
