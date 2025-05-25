@@ -53,9 +53,13 @@ class Review:
     def instance_from_db(cls, row):
         review_id = row[0]
         if review_id in cls.all:
-            return cls.all[review_id]
-        review = cls(row[1], row[2], row[3], review_id)
-        cls.all[review_id] = review
+            review = cls.all[review_id]
+            review.year = row[1]
+            review.summary = row[2]
+            review.employee_id = row[3]
+        else:
+            review = cls(row[1], row[2], row[3], review_id)
+            cls.all[review_id] = review
         return review
 
     @classmethod
@@ -84,7 +88,7 @@ class Review:
         rows = CURSOR.fetchall()
         return [cls.instance_from_db(row) for row in rows]
 
-    # === Property validations ===
+    # === Property Validations ===
     @property
     def year(self):
         return self._year
@@ -115,10 +119,9 @@ class Review:
     def employee_id(self, value):
         from lib.employee import Employee
         if isinstance(value, int):
-            employee = Employee.find_by_id(value)
-            if employee:
+            if Employee.find_by_id(value):
                 self._employee_id = value
             else:
-                raise ValueError("Employee ID must refer to a valid employee")
+                raise ValueError("employee_id must refer to a valid Employee")
         else:
-            raise TypeError("Employee ID must be an integer")
+            raise TypeError("employee_id must be an integer")
