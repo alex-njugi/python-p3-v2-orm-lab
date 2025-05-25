@@ -48,6 +48,29 @@ class Employee:
             self.id = CURSOR.lastrowid
             Employee.all[self.id] = self
 
+    def update(self):
+        CURSOR.execute(
+            "UPDATE employees SET name = ?, job_title = ?, department_id = ? WHERE id = ?",
+            (self.name, self.job_title, self.department_id, self.id)
+        )
+        CONN.commit()
+
+    @classmethod
+    def find_by_id(cls, id):
+        CURSOR.execute("SELECT * FROM employees WHERE id = ?", (id,))
+        row = CURSOR.fetchone()
+        if row:
+            return cls.instance_from_db(row)
+        return None
+
+    @classmethod
+    def find_by_name(cls, name):
+        CURSOR.execute("SELECT * FROM employees WHERE name = ?", (name,))
+        row = CURSOR.fetchone()
+        if row:
+            return cls.instance_from_db(row)
+        return None
+
     @classmethod
     def instance_from_db(cls, row):
         id, name, job_title, department_id = row
@@ -75,3 +98,39 @@ class Employee:
         CURSOR.execute("SELECT * FROM reviews WHERE employee_id = ?", (self.id,))
         rows = CURSOR.fetchall()
         return [Review.instance_from_db(row) for row in rows]
+
+    # === Property Validation ===
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if isinstance(value, str) and len(value.strip()) > 0:
+            self._name = value.strip()
+        else:
+            raise ValueError("Name must be a non-empty string")
+
+    @property
+    def job_title(self):
+        return self._job_title
+
+    @job_title.setter
+    def job_title(self, value):
+        if isinstance(value, str) and len(value.strip()) > 0:
+            self._job_title = value.strip()
+        else:
+            raise ValueError("Job title must be a non-empty string")
+
+    @property
+    def department_id(self):
+        return self._department_id
+
+    @department_id.setter
+    def department_id(self, value):
+        from lib.department import Department
+        if isinstance(value, int) and Department.find_by_id(value):
+            self._department_id = value
+        else:
+            raise ValueError("department_id must reference a valid Department")
